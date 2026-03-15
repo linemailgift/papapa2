@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ちいくじパパパメーカー</title>
+    <title>ちいくじパパパメーカー v2</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,27 +20,34 @@
 
     <style>
         body {
-            background-color: #111827; /* gray-900 */
+            background: linear-gradient(135deg, #1a0a2e 0%, #16082b 40%, #0d1117 100%);
             color: white;
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-        /* スクロールバー等の調整 */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #1f2937; 
+            background: #1a0a2e;
         }
         ::-webkit-scrollbar-thumb {
-            background: #4b5563; 
+            background: #6b21a8;
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280; 
+            background: #7c3aed;
         }
         input[type=range] {
             cursor: pointer;
+        }
+        .v2-card {
+            background: linear-gradient(145deg, rgba(88,28,135,0.15), rgba(30,10,60,0.4));
+            border: 1px solid rgba(139,92,246,0.2);
+            backdrop-filter: blur(8px);
+        }
+        .v2-glow {
+            box-shadow: 0 0 20px rgba(139,92,246,0.15), 0 0 40px rgba(139,92,246,0.05);
         }
     </style>
 </head>
@@ -1111,14 +1118,15 @@
             };
 
             return (
-                <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col items-center p-4">
-                    <header className="w-full max-w-6xl flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
+                <div className="min-h-screen text-white font-sans flex flex-col items-center p-4">
+                    <header className="w-full max-w-6xl flex justify-between items-center mb-4 border-b border-purple-800/40 pb-4">
                         <h1 className="text-2xl font-bold flex items-center gap-2">
-                            <ImageIcon className="text-blue-400" />
-                            ちいくじパパパメーカー
+                            <ImageIcon className="text-amber-400" />
+                            <span className="bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">ちいくじパパパメーカー</span>
+                            <span className="text-xs bg-purple-600 text-purple-100 px-2 py-0.5 rounded-full font-bold ml-1">v2</span>
                         </h1>
-                        <div className="text-sm text-gray-400 flex items-center gap-1">
-                            <Settings size={16} /> フル機能搭載版
+                        <div className="text-sm text-purple-300 flex items-center gap-1">
+                            <Settings size={16} /> 複数PDF対応版
                         </div>
                     </header>
 
@@ -1126,50 +1134,50 @@
                         
                         {/* アップロード画面 */}
                         {status === 'upload' && (
-                            <div className="flex-1 flex flex-col md:flex-row gap-6 items-stretch justify-center p-8 bg-gray-800/50 rounded-xl border border-gray-700">
-                                
+                            <div className="flex-1 flex flex-col md:flex-row gap-6 items-stretch justify-center p-8 v2-card rounded-2xl v2-glow">
+
                                 {/* 左: サンプル生成 */}
-                                <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-gray-800 to-gray-700 rounded-xl border-2 border-yellow-500/50 hover:border-yellow-400 transition-all shadow-lg min-h-[300px]">
-                                    <Layers className="text-yellow-400 mb-4" size={56} />
-                                    <h2 className="text-2xl font-bold mb-2 text-yellow-100">サンプルで試す</h2>
-                                    <p className="text-sm text-gray-400 mb-6 text-center">ダミー画像を使って<br/>動作を確認できます</p>
-                                    
-                                    <div className="flex items-center gap-2 mb-6 bg-gray-900/50 px-4 py-2 rounded-lg border border-gray-600">
-                                        <span className="text-sm font-bold text-gray-300">枚数:</span>
-                                        <input 
-                                            type="number" 
-                                            min="1" 
-                                            max="200" 
-                                            value={sampleCount} 
+                                <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-purple-900/40 to-purple-800/20 rounded-xl border-2 border-amber-500/40 hover:border-amber-400 transition-all shadow-lg min-h-[300px]">
+                                    <Layers className="text-amber-400 mb-4" size={56} />
+                                    <h2 className="text-2xl font-bold mb-2 text-amber-100">サンプルで試す</h2>
+                                    <p className="text-sm text-purple-300 mb-6 text-center">ダミー画像を使って<br/>動作を確認できます</p>
+
+                                    <div className="flex items-center gap-2 mb-6 bg-purple-950/50 px-4 py-2 rounded-lg border border-purple-700/50">
+                                        <span className="text-sm font-bold text-purple-200">枚数:</span>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="200"
+                                            value={sampleCount}
                                             onChange={(e) => setSampleCount(Number(e.target.value))}
-                                            className="w-16 bg-transparent text-center font-mono text-xl text-yellow-400 focus:outline-none"
+                                            className="w-16 bg-transparent text-center font-mono text-xl text-amber-400 focus:outline-none"
                                         />
                                     </div>
-                                    
-                                    <button 
-                                        onClick={generateSampleImages} 
-                                        className="w-full py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
+
+                                    <button
+                                        onClick={generateSampleImages}
+                                        className="w-full py-3 bg-amber-600 hover:bg-amber-500 rounded-lg text-white font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
                                     >
                                         <Play size={18} fill="currentColor" /> スタート
                                     </button>
                                 </div>
 
                                 {/* 中央: 画像アップロード */}
-                                <div 
-                                    className="flex-1 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center p-8 transition-colors hover:border-blue-500 bg-gray-900 cursor-pointer min-h-[300px]"
+                                <div
+                                    className="flex-1 border-2 border-dashed border-purple-600/40 rounded-xl flex flex-col items-center justify-center p-8 transition-colors hover:border-violet-400 bg-purple-950/30 cursor-pointer min-h-[300px]"
                                     onDragOver={handleDragOver} onDrop={handleDrop}
                                 >
                                     <input type="file" multiple accept="image/*" className="hidden" id="fileInput" onChange={handleFileChange} />
                                     <label htmlFor="fileInput" className="cursor-pointer flex flex-col items-center text-center w-full h-full justify-center">
-                                        <Upload size={48} className="text-blue-400 mb-4" />
+                                        <Upload size={48} className="text-violet-400 mb-4" />
                                         <p className="text-lg font-bold mb-2">画像ファイルをアップロード</p>
-                                        <p className="text-sm text-gray-500">画像を複数ドロップ</p>
+                                        <p className="text-sm text-purple-400">画像を複数ドロップ</p>
                                     </label>
                                 </div>
 
                                 {/* 右: PDFアップロード（複数対応） */}
                                 <div
-                                    className="flex-1 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center p-8 transition-colors hover:border-red-500 bg-gray-900 cursor-pointer min-h-[300px]"
+                                    className="flex-1 border-2 border-dashed border-purple-600/40 rounded-xl flex flex-col items-center justify-center p-8 transition-colors hover:border-rose-400 bg-purple-950/30 cursor-pointer min-h-[300px]"
                                     onDragOver={(e) => e.preventDefault()}
                                     onDrop={(e) => {
                                         e.preventDefault();
@@ -1178,9 +1186,9 @@
                                 >
                                     <input type="file" accept="application/pdf" multiple className="hidden" id="pdfInput" onChange={handlePdfFileChange} />
                                     <label htmlFor="pdfInput" className="cursor-pointer flex flex-col items-center text-center w-full h-full justify-center">
-                                        <FileText size={48} className="text-red-400 mb-4" />
+                                        <FileText size={48} className="text-rose-400 mb-4" />
                                         <p className="text-lg font-bold mb-2">PDFをアップロード</p>
-                                        <p className="text-sm text-gray-500">複数PDFをまとめて選択OK<br/>連続パパパで1本の動画に</p>
+                                        <p className="text-sm text-purple-400">複数PDFをまとめて選択OK<br/>連続パパパで1本の動画に</p>
                                     </label>
                                 </div>
                             </div>
@@ -1188,73 +1196,73 @@
 
                         {/* PDF処理画面 */}
                         {status === 'pdf-processing' && (
-                            <div className="flex-1 flex flex-col items-center justify-center bg-gray-800 rounded-xl p-8">
-                                <Activity className="animate-spin text-blue-400 mb-4" size={48} />
+                            <div className="flex-1 flex flex-col items-center justify-center v2-card rounded-2xl p-8">
+                                <Activity className="animate-spin text-violet-400 mb-4" size={48} />
                                 <h2 className="text-2xl font-bold mb-4">PDFを処理中...</h2>
                                 {pdfQueue.length > 1 && (
-                                    <p className="text-sm text-gray-300 mb-2">{currentPdfIndex + 1} / {pdfQueue.length} ファイル: {pdfQueue[currentPdfIndex]?.name}</p>
+                                    <p className="text-sm text-purple-200 mb-2">{currentPdfIndex + 1} / {pdfQueue.length} ファイル: {pdfQueue[currentPdfIndex]?.name}</p>
                                 )}
-                                <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
-                                    <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${pdfProcessingProgress}%` }} />
+                                <div className="w-64 h-2 bg-purple-900 rounded-full overflow-hidden">
+                                    <div className="h-full bg-gradient-to-r from-violet-500 to-amber-400 transition-all duration-300" style={{ width: `${pdfProcessingProgress}%` }} />
                                 </div>
-                                <p className="mt-2 text-gray-400">{pdfProcessingProgress}%</p>
+                                <p className="mt-2 text-purple-300">{pdfProcessingProgress}%</p>
                             </div>
                         )}
 
                         {/* PDF選択画面 */}
                         {status === 'pdf-select' && (
-                            <div className="flex-1 flex flex-col bg-gray-800 rounded-xl p-4 h-[80vh]">
+                            <div className="flex-1 flex flex-col v2-card rounded-2xl p-4 h-[80vh]">
                                 <div className="flex justify-between items-center mb-4 px-2">
                                     <h2 className="text-xl font-bold flex items-center gap-2">
-                                        <CheckSquare size={24} className="text-green-400" />
+                                        <CheckSquare size={24} className="text-amber-400" />
                                         使用ページ選択 ({pdfPages.filter(p => p.selected).length} / {pdfPages.length})
                                     </h2>
                                     <div className="flex gap-2">
-                                        <button onClick={() => toggleAllPdfPages(true)} className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded">すべて選択</button>
-                                        <button onClick={() => toggleAllPdfPages(false)} className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded">すべて解除</button>
+                                        <button onClick={() => toggleAllPdfPages(true)} className="px-3 py-1 text-sm bg-purple-800/50 hover:bg-purple-700/50 rounded border border-purple-600/30">すべて選択</button>
+                                        <button onClick={() => toggleAllPdfPages(false)} className="px-3 py-1 text-sm bg-purple-800/50 hover:bg-purple-700/50 rounded border border-purple-600/30">すべて解除</button>
                                     </div>
                                 </div>
-                                <div className="flex-1 overflow-y-auto p-2 bg-gray-900 rounded-lg border border-gray-700">
+                                <div className="flex-1 overflow-y-auto p-2 bg-purple-950/40 rounded-lg border border-purple-800/30">
                                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                         {pdfPages.map((page) => (
-                                            <div key={page.id} onClick={() => togglePdfPageSelection(page.id)} className={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${page.selected ? 'border-green-500 ring-2 ring-green-500/30' : 'border-transparent opacity-60 hover:opacity-80'}`}>
+                                            <div key={page.id} onClick={() => togglePdfPageSelection(page.id)} className={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${page.selected ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-transparent opacity-60 hover:opacity-80'}`}>
                                                 <img src={page.src} alt={`Page ${page.id}`} className="w-full h-full object-cover" />
                                                 <div className="absolute top-2 left-2">
-                                                    {page.selected ? <CheckSquare className="text-green-500 bg-white rounded shadow" size={20} /> : <Square className="text-gray-400 bg-gray-800 rounded shadow" size={20} />}
+                                                    {page.selected ? <CheckSquare className="text-amber-400 bg-white rounded shadow" size={20} /> : <Square className="text-purple-400 bg-purple-900 rounded shadow" size={20} />}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-                                <div className="flex justify-end gap-4 mt-4 pt-2 border-t border-gray-700">
-                                    <button onClick={() => { setPdfPages([]); setStatus('upload'); }} className="px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">キャンセル</button>
-                                    <button onClick={importSelectedPdfPages} className="px-8 py-2 rounded-lg bg-green-600 hover:bg-green-500 font-bold flex items-center gap-2">選択した画像を取り込む</button>
+                                <div className="flex justify-end gap-4 mt-4 pt-2 border-t border-purple-800/30">
+                                    <button onClick={() => { setPdfPages([]); setStatus('upload'); }} className="px-6 py-2 rounded-lg bg-purple-800/50 hover:bg-purple-700/50">キャンセル</button>
+                                    <button onClick={importSelectedPdfPages} className="px-8 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold flex items-center gap-2">選択した画像を取り込む</button>
                                 </div>
                             </div>
                         )}
 
                         {/* 複数PDF確認画面 */}
                         {status === 'multi-pdf-confirm' && (
-                            <div className="flex-1 flex flex-col bg-gray-800 rounded-xl p-6">
+                            <div className="flex-1 flex flex-col v2-card rounded-2xl p-6">
                                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                    <Layers size={24} className="text-red-400" />
+                                    <Layers size={24} className="text-amber-400" />
                                     {sections.length}個のPDFを読み込みました
                                 </h2>
                                 <div className="flex-1 overflow-y-auto space-y-4 mb-4">
                                     {sections.map((sec, i) => (
-                                        <div key={i} className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                                        <div key={i} className="bg-purple-950/40 rounded-lg p-4 border border-purple-700/30">
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="font-bold text-sm text-blue-300">セクション {i + 1}: {sec.name}</span>
-                                                <span className="text-xs text-gray-400">{sec.images.length}ページ</span>
+                                                <span className="font-bold text-sm text-amber-300">セクション {i + 1}: {sec.name}</span>
+                                                <span className="text-xs text-purple-300">{sec.images.length}ページ</span>
                                             </div>
                                             <div className="flex gap-2 overflow-x-auto pb-2">
                                                 {sec.images.slice(0, 8).map((img, j) => (
-                                                    <div key={j} className="flex-shrink-0 w-24 h-16 bg-gray-800 rounded overflow-hidden border border-gray-600">
+                                                    <div key={j} className="flex-shrink-0 w-24 h-16 bg-purple-900/40 rounded overflow-hidden border border-purple-600/30">
                                                         <img src={img.src} className="w-full h-full object-cover" />
                                                     </div>
                                                 ))}
                                                 {sec.images.length > 8 && (
-                                                    <div className="flex-shrink-0 w-24 h-16 bg-gray-800 rounded border border-gray-600 flex items-center justify-center text-xs text-gray-400">
+                                                    <div className="flex-shrink-0 w-24 h-16 bg-purple-900/40 rounded border border-purple-600/30 flex items-center justify-center text-xs text-purple-300">
                                                         +{sec.images.length - 8}枚
                                                     </div>
                                                 )}
@@ -1262,25 +1270,25 @@
                                         </div>
                                     ))}
                                 </div>
-                                <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-700 mb-4">
-                                    <div className="flex items-center justify-between text-sm text-gray-300 mb-2">
+                                <div className="bg-purple-950/40 p-3 rounded-lg border border-purple-700/30 mb-4">
+                                    <div className="flex items-center justify-between text-sm text-purple-200 mb-2">
                                         <span>セクション間の間隔</span>
-                                        <span className="font-mono text-blue-400">{sectionGap}秒</span>
+                                        <span className="font-mono text-amber-400">{sectionGap}秒</span>
                                     </div>
                                     <input type="range" min="0" max="5" step="0.5" value={sectionGap}
                                         onChange={(e) => setSectionGap(Number(e.target.value))}
-                                        className="w-full accent-blue-500 h-1" />
-                                    <p className="text-[10px] text-gray-500 mt-1">各PDFのパパパ完了後、次のPDFが始まるまでの待機時間</p>
+                                        className="w-full accent-amber-500 h-1" />
+                                    <p className="text-[10px] text-purple-400 mt-1">各PDFのパパパ完了後、次のPDFが始まるまでの待機時間</p>
                                 </div>
-                                <div className="flex items-center justify-between pt-2 border-t border-gray-700">
-                                    <div className="text-sm text-gray-400">
+                                <div className="flex items-center justify-between pt-2 border-t border-purple-700/30">
+                                    <div className="text-sm text-purple-300">
                                         合計 {loadedImages.length}枚 → 1本の動画
                                     </div>
                                     <div className="flex gap-4">
                                         <button onClick={() => { setSections([]); setLoadedImages([]); setPdfQueue([]); setStatus('upload'); }}
-                                            className="px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">キャンセル</button>
+                                            className="px-6 py-2 rounded-lg bg-purple-800/50 hover:bg-purple-700/50">キャンセル</button>
                                         <button onClick={() => { setStatus('confirm'); }}
-                                            className="px-8 py-2 rounded-lg bg-green-600 hover:bg-green-500 font-bold">OK、パパパ開始</button>
+                                            className="px-8 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold">OK、パパパ開始</button>
                                     </div>
                                 </div>
                             </div>
@@ -1288,12 +1296,12 @@
 
                         {/* 確認画面 */}
                         {status === 'confirm' && (
-                            <div className="flex-1 flex flex-col items-center justify-center bg-gray-800 rounded-xl p-8">
-                                <div className="text-6xl font-bold text-blue-400 mb-4">{loadedImages.length}</div>
+                            <div className="flex-1 flex flex-col items-center justify-center v2-card rounded-2xl p-8">
+                                <div className="text-6xl font-bold bg-gradient-to-r from-amber-300 to-violet-400 bg-clip-text text-transparent mb-4">{loadedImages.length}</div>
                                 <p className="text-2xl mb-8">枚の画像を準備しました。</p>
                                 <div className="flex gap-4">
-                                    <button onClick={() => { setFiles([]); setLoadedImages([]); setStatus('upload'); }} className="px-6 py-3 rounded-lg bg-gray-700">キャンセル</button>
-                                    <button onClick={() => { setStatus('ready'); setTimeout(initCanvas, 100); }} className="px-8 py-3 rounded-lg bg-blue-600 font-bold flex items-center gap-2"><Check /> OKです</button>
+                                    <button onClick={() => { setFiles([]); setLoadedImages([]); setStatus('upload'); }} className="px-6 py-3 rounded-lg bg-purple-800/50 hover:bg-purple-700/50">キャンセル</button>
+                                    <button onClick={() => { setStatus('ready'); setTimeout(initCanvas, 100); }} className="px-8 py-3 rounded-lg bg-violet-600 hover:bg-violet-500 font-bold flex items-center gap-2"><Check /> OKです</button>
                                 </div>
                             </div>
                         )}
@@ -1301,42 +1309,42 @@
                         {/* プレビュー/実行画面 */}
                         {(status === 'ready' || status === 'playing' || status === 'finished') && (
                             <div className="flex flex-col w-full h-full gap-4">
-                                <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-xl border border-gray-700">
+                                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden v2-glow border border-purple-700/30">
                                     <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} className="w-full h-full object-contain" />
-                                    <div className="absolute top-4 left-4 bg-black/60 px-3 py-1 rounded text-sm font-mono backdrop-blur-sm flex items-center gap-3 border border-gray-600 z-10">
+                                    <div className="absolute top-4 left-4 bg-purple-950/70 px-3 py-1 rounded-lg text-sm font-mono backdrop-blur-sm flex items-center gap-3 border border-purple-600/30 z-10">
                                         <span>{currentIndex} / {loadedImages.length}</span>
-                                        {sections.length > 1 && <span className="text-xs text-blue-300">SEC {currentSectionIndex + 1}/{sections.length}</span>}
-                                        {status === 'playing' && <span className="flex items-center gap-1 text-red-400 text-xs animate-pulse">REC</span>}
+                                        {sections.length > 1 && <span className="text-xs text-amber-300">SEC {currentSectionIndex + 1}/{sections.length}</span>}
+                                        {status === 'playing' && <span className="flex items-center gap-1 text-rose-400 text-xs animate-pulse">REC</span>}
                                     </div>
                                 </div>
 
-                                <div className="bg-gray-800 p-4 rounded-xl flex flex-col gap-4 shadow-lg">
-                                    <div className="relative flex items-center justify-center border-b border-gray-700 pb-4">
+                                <div className="v2-card p-4 rounded-2xl flex flex-col gap-4 v2-glow">
+                                    <div className="relative flex items-center justify-center border-b border-purple-700/30 pb-4">
                                         <div className="absolute left-0">
-                                            <button onClick={handleGoHome} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-colors z-20" title="トップページに戻る">
+                                            <button onClick={handleGoHome} className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-800/50 hover:bg-purple-700/50 text-white transition-colors z-20" title="トップページに戻る">
                                                 <Home size={18} />
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-6">
-                                            <button onClick={handleRestart} className="flex flex-col items-center justify-center gap-1 text-xs font-bold text-gray-300 hover:text-white transition-colors group" title="最初から再生">
-                                                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-700 group-hover:bg-blue-600 text-white shadow-lg transition-all">
+                                            <button onClick={handleRestart} className="flex flex-col items-center justify-center gap-1 text-xs font-bold text-purple-300 hover:text-white transition-colors group" title="最初から再生">
+                                                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-purple-800/50 group-hover:bg-violet-600 text-white shadow-lg transition-all">
                                                     <RefreshCcw size={20} />
                                                 </div>
                                                 <span>最初から</span>
                                             </button>
                                             {status === 'playing' ? (
-                                                <button onClick={handlePause} className="w-20 h-20 flex items-center justify-center rounded-full bg-yellow-600 hover:bg-yellow-500 text-white shadow-xl transition-transform active:scale-95">
+                                                <button onClick={handlePause} className="w-20 h-20 flex items-center justify-center rounded-full bg-amber-600 hover:bg-amber-500 text-white shadow-xl transition-transform active:scale-95">
                                                     <Pause fill="currentColor" size={32} />
                                                 </button>
                                             ) : (
-                                                <button onClick={handleStart} disabled={status === 'finished'} className={`w-20 h-20 flex items-center justify-center rounded-full shadow-xl transition-transform active:scale-95 ${status === 'finished' ? 'bg-gray-600 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 text-white'}`}>
+                                                <button onClick={handleStart} disabled={status === 'finished'} className={`w-20 h-20 flex items-center justify-center rounded-full shadow-xl transition-transform active:scale-95 ${status === 'finished' ? 'bg-purple-800/50 cursor-not-allowed' : 'bg-violet-600 hover:bg-violet-500 text-white'}`}>
                                                     <Play fill="currentColor" size={32} className="ml-1" />
                                                 </button>
                                             )}
                                         </div>
                                         <div className="absolute right-0 flex items-center gap-2">
                                             {videoBlobInfo && (
-                                                <button onClick={handleDownloadVideo} className="px-4 py-2 bg-pink-600 hover:bg-pink-500 rounded-lg flex items-center gap-2 font-bold animate-in fade-in text-white shadow-lg">
+                                                <button onClick={handleDownloadVideo} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg flex items-center gap-2 font-bold animate-in fade-in text-white shadow-lg">
                                                     <Film size={20} /> <span className="hidden sm:inline">動画保存</span>
                                                 </button>
                                             )}
@@ -1344,9 +1352,9 @@
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-                                        <div className="bg-gray-900/50 p-3 rounded-lg flex flex-col gap-2 border border-green-900/30">
-                                            <span className="flex items-center gap-1 text-sm text-green-200"><Activity size={14}/> アニメーション</span>
-                                            <select value={animPattern} onChange={(e) => setAnimPattern(e.target.value)} className="bg-gray-800 text-xs p-2 rounded border border-gray-700 outline-none">
+                                        <div className="bg-purple-950/40 p-3 rounded-lg flex flex-col gap-2 border border-violet-700/30">
+                                            <span className="flex items-center gap-1 text-sm text-violet-200"><Activity size={14}/> アニメーション</span>
+                                            <select value={animPattern} onChange={(e) => setAnimPattern(e.target.value)} className="bg-purple-900/50 text-xs p-2 rounded border border-purple-700/30 outline-none">
                                                 <option value="random">ランダム (標準)</option>
                                                 <option value="fade">フェードイン (Fade)</option>
                                                 <option value="slide-random">スライドイン (Slide)</option>
@@ -1358,114 +1366,114 @@
                                                 <option value="tile">タイル・スライド</option>
                                             </select>
                                             {animPattern === 'tile' && (
-                                                <div className="flex flex-col gap-1 mt-1 p-2 bg-gray-800 rounded border border-gray-700">
-                                                    <div className="flex items-center justify-between text-xs text-gray-300">
+                                                <div className="flex flex-col gap-1 mt-1 p-2 bg-purple-900/30 rounded border border-purple-700/30">
+                                                    <div className="flex items-center justify-between text-xs text-purple-200">
                                                         <span>縦 x 横</span>
                                                         <div className="flex gap-1">
-                                                            <input type="number" min="1" max="20" value={tileConfig.rows} onChange={(e) => setTileConfig(p=>({...p, rows: Number(e.target.value)}))} className="w-10 bg-gray-700 text-center rounded" title="縦(行)"/>
+                                                            <input type="number" min="1" max="20" value={tileConfig.rows} onChange={(e) => setTileConfig(p=>({...p, rows: Number(e.target.value)}))} className="w-10 bg-purple-800/50 text-center rounded" title="縦(行)"/>
                                                             <span>x</span>
-                                                            <input type="number" min="1" max="20" value={tileConfig.cols} onChange={(e) => setTileConfig(p=>({...p, cols: Number(e.target.value)}))} className="w-10 bg-gray-700 text-center rounded" title="横(列)"/>
+                                                            <input type="number" min="1" max="20" value={tileConfig.cols} onChange={(e) => setTileConfig(p=>({...p, cols: Number(e.target.value)}))} className="w-10 bg-purple-800/50 text-center rounded" title="横(列)"/>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center justify-between text-xs text-gray-300 mt-1">
+                                                    <div className="flex items-center justify-between text-xs text-purple-200 mt-1">
                                                         <span>方向</span>
                                                         <div className="flex gap-1">
-                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'left'}))} className={`p-1 rounded ${tileConfig.direction==='left'?'bg-blue-600':'bg-gray-700'}`}><ArrowLeft size={10}/></button>
-                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'right'}))} className={`p-1 rounded ${tileConfig.direction==='right'?'bg-blue-600':'bg-gray-700'}`}><ArrowRight size={10}/></button>
-                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'top'}))} className={`p-1 rounded ${tileConfig.direction==='top'?'bg-blue-600':'bg-gray-700'}`}><ArrowUp size={10}/></button>
-                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'bottom'}))} className={`p-1 rounded ${tileConfig.direction==='bottom'?'bg-blue-600':'bg-gray-700'}`}><ArrowDown size={10}/></button>
+                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'left'}))} className={`p-1 rounded ${tileConfig.direction==='left'?'bg-violet-600':'bg-purple-800/50'}`}><ArrowLeft size={10}/></button>
+                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'right'}))} className={`p-1 rounded ${tileConfig.direction==='right'?'bg-violet-600':'bg-purple-800/50'}`}><ArrowRight size={10}/></button>
+                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'top'}))} className={`p-1 rounded ${tileConfig.direction==='top'?'bg-violet-600':'bg-purple-800/50'}`}><ArrowUp size={10}/></button>
+                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'bottom'}))} className={`p-1 rounded ${tileConfig.direction==='bottom'?'bg-violet-600':'bg-purple-800/50'}`}><ArrowDown size={10}/></button>
                                                         </div>
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
 
-                                        <div className="bg-gray-900/50 p-3 rounded-lg flex flex-col gap-2 relative">
-                                            <div className="flex items-center justify-between text-sm text-gray-300">
+                                        <div className="bg-purple-950/40 p-3 rounded-lg flex flex-col gap-2 relative border border-purple-700/30">
+                                            <div className="flex items-center justify-between text-sm text-purple-200">
                                                 <span className="flex items-center gap-1"><Palette size={14}/> 背景設定</span>
                                             </div>
                                             <div className="flex gap-2 mb-1">
-                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#000000'}))} className={`flex-1 h-6 rounded border border-gray-600 bg-black ${bgConfig.type==='color' && bgConfig.color==='#000000' ? 'ring-2 ring-blue-500' : ''}`} title="黒" />
-                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#FFFFFF'}))} className={`flex-1 h-6 rounded border border-gray-600 bg-white ${bgConfig.type==='color' && bgConfig.color==='#FFFFFF' ? 'ring-2 ring-blue-500' : ''}`} title="白" />
-                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#00FF00'}))} className={`flex-1 h-6 rounded border border-gray-600 bg-green-500 font-bold text-[10px] text-black flex items-center justify-center ${bgConfig.type==='color' && bgConfig.color==='#00FF00' ? 'ring-2 ring-blue-500' : ''}`} title="グリーンバック">GB</button>
+                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#000000'}))} className={`flex-1 h-6 rounded border border-purple-600/30 bg-black ${bgConfig.type==='color' && bgConfig.color==='#000000' ? 'ring-2 ring-amber-400' : ''}`} title="黒" />
+                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#FFFFFF'}))} className={`flex-1 h-6 rounded border border-purple-600/30 bg-white ${bgConfig.type==='color' && bgConfig.color==='#FFFFFF' ? 'ring-2 ring-amber-400' : ''}`} title="白" />
+                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#00FF00'}))} className={`flex-1 h-6 rounded border border-purple-600/30 bg-green-500 font-bold text-[10px] text-black flex items-center justify-center ${bgConfig.type==='color' && bgConfig.color==='#00FF00' ? 'ring-2 ring-amber-400' : ''}`} title="グリーンバック">GB</button>
                                                 <input type="color" value={bgConfig.type==='color' ? bgConfig.color : '#000000'} onChange={(e) => setBgConfig(p => ({...p, type: 'color', color: e.target.value}))} className="w-8 h-6 p-0 border-0 rounded" />
                                             </div>
-                                            <label className="flex items-center justify-center gap-2 w-full py-1.5 bg-gray-800 hover:bg-gray-700 rounded cursor-pointer text-xs text-gray-300 border border-gray-600 transition-colors">
+                                            <label className="flex items-center justify-center gap-2 w-full py-1.5 bg-purple-900/40 hover:bg-purple-800/40 rounded cursor-pointer text-xs text-purple-200 border border-purple-600/30 transition-colors">
                                                 {bgConfig.type === 'video' ? <Video size={14}/> : <ImageIconSmall size={14}/>}
                                                 <span>{bgConfig.mediaSrc ? 'メディア変更' : '画像/動画を選択'}</span>
                                                 <input type="file" accept="image/*,video/*" className="hidden" onChange={handleBgMediaUpload} />
                                             </label>
                                         </div>
 
-                                        <div className="bg-gray-900/50 p-3 rounded-lg flex flex-col gap-2 relative">
-                                            <div className="flex items-center justify-between text-sm text-gray-300">
+                                        <div className="bg-purple-950/40 p-3 rounded-lg flex flex-col gap-2 relative border border-purple-700/30">
+                                            <div className="flex items-center justify-between text-sm text-purple-200">
                                                 <span className="flex items-center gap-1"><Maximize size={14}/> サイズ & 角度</span>
                                             </div>
                                             <div className="flex flex-col gap-1 text-xs">
-                                                <div className="flex justify-between items-center text-gray-400">
+                                                <div className="flex justify-between items-center text-purple-300">
                                                     <span>Size</span>
-                                                    <div className="flex bg-gray-800 rounded p-0.5">
-                                                        <button onClick={() => { setSizeMode('random'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${sizeMode==='random'?'bg-blue-600 text-white':'text-gray-400'}`}>ランダム</button>
-                                                        <button onClick={() => { setSizeMode('fixed'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${sizeMode==='fixed'?'bg-blue-600 text-white':'text-gray-400'}`}>固定</button>
+                                                    <div className="flex bg-purple-900/50 rounded p-0.5">
+                                                        <button onClick={() => { setSizeMode('random'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${sizeMode==='random'?'bg-violet-600 text-white':'text-purple-400'}`}>ランダム</button>
+                                                        <button onClick={() => { setSizeMode('fixed'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${sizeMode==='fixed'?'bg-violet-600 text-white':'text-purple-400'}`}>固定</button>
                                                     </div>
                                                 </div>
                                                 {sizeMode === 'random' ? (
                                                     <div className="flex gap-1 items-center">
-                                                        <input type="range" min="1" max="100" value={scaleRange.min} onInput={() => triggerPreview()} onChange={(e) => setScaleRange(p=>({...p, min:Number(e.target.value)}))} className="flex-1 h-1 accent-blue-500" />
+                                                        <input type="range" min="1" max="100" value={scaleRange.min} onInput={() => triggerPreview()} onChange={(e) => setScaleRange(p=>({...p, min:Number(e.target.value)}))} className="flex-1 h-1 accent-violet-500" />
                                                         <span className="text-[10px]">-</span>
-                                                        <input type="range" min="1" max="100" value={scaleRange.max} onInput={() => triggerPreview()} onChange={(e) => setScaleRange(p=>({...p, max:Number(e.target.value)}))} className="flex-1 h-1 accent-blue-500" />
+                                                        <input type="range" min="1" max="100" value={scaleRange.max} onInput={() => triggerPreview()} onChange={(e) => setScaleRange(p=>({...p, max:Number(e.target.value)}))} className="flex-1 h-1 accent-violet-500" />
                                                     </div>
                                                 ) : (
-                                                    <input type="range" min="1" max="150" value={fixedSize} onInput={() => triggerPreview()} onChange={(e) => setFixedSize(Number(e.target.value))} className="w-full h-1 accent-blue-500" />
+                                                    <input type="range" min="1" max="150" value={fixedSize} onInput={() => triggerPreview()} onChange={(e) => setFixedSize(Number(e.target.value))} className="w-full h-1 accent-violet-500" />
                                                 )}
                                             </div>
-                                            <div className="flex flex-col gap-1 text-xs mt-1 border-t border-gray-700 pt-1">
-                                                <div className="flex justify-between items-center text-gray-400">
+                                            <div className="flex flex-col gap-1 text-xs mt-1 border-t border-purple-700/30 pt-1">
+                                                <div className="flex justify-between items-center text-purple-300">
                                                     <span>Angle</span>
-                                                    <div className="flex bg-gray-800 rounded p-0.5">
-                                                        <button onClick={() => { setAngleMode('random'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${angleMode==='random'?'bg-blue-600 text-white':'text-gray-400'}`}>ランダム</button>
-                                                        <button onClick={() => { setAngleMode('fixed'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${angleMode==='fixed'?'bg-blue-600 text-white':'text-gray-400'}`}>固定</button>
+                                                    <div className="flex bg-purple-900/50 rounded p-0.5">
+                                                        <button onClick={() => { setAngleMode('random'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${angleMode==='random'?'bg-violet-600 text-white':'text-purple-400'}`}>ランダム</button>
+                                                        <button onClick={() => { setAngleMode('fixed'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${angleMode==='fixed'?'bg-violet-600 text-white':'text-purple-400'}`}>固定</button>
                                                     </div>
                                                 </div>
                                                 {angleMode === 'fixed' && (
                                                     <div className="flex items-center gap-2">
-                                                        <input type="range" min="-180" max="180" value={fixedAngle} onInput={() => triggerPreview()} onChange={(e) => setFixedAngle(Number(e.target.value))} className="flex-1 h-1 accent-blue-500" />
+                                                        <input type="range" min="-180" max="180" value={fixedAngle} onInput={() => triggerPreview()} onChange={(e) => setFixedAngle(Number(e.target.value))} className="flex-1 h-1 accent-violet-500" />
                                                         <span className="w-6 text-right font-mono">{fixedAngle}°</span>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
 
-                                        <div className="bg-gray-900/50 p-3 rounded-lg flex flex-col gap-2">
-                                            <div className="flex justify-between text-xs text-gray-300">
+                                        <div className="bg-purple-950/40 p-3 rounded-lg flex flex-col gap-2 border border-purple-700/30">
+                                            <div className="flex justify-between text-xs text-purple-200">
                                                 <span className="flex items-center gap-1"><Sliders size={12}/> 表示間隔</span>
-                                                <span className="font-mono">{speed}ms</span>
+                                                <span className="font-mono text-amber-300">{speed}ms</span>
                                             </div>
-                                            <input type="range" min="20" max="800" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="w-full accent-blue-500 h-1 mb-1" />
+                                            <input type="range" min="20" max="800" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="w-full accent-violet-500 h-1 mb-1" />
                                             {sections.length > 1 && (
-                                                <div className="flex justify-between text-xs text-gray-300 mt-1">
+                                                <div className="flex justify-between text-xs text-purple-200 mt-1">
                                                     <span>セクション間隔</span>
-                                                    <span className="font-mono">{sectionGap}秒</span>
+                                                    <span className="font-mono text-amber-300">{sectionGap}秒</span>
                                                 </div>
                                             )}
                                             {sections.length > 1 && (
-                                                <input type="range" min="0" max="5" step="0.5" value={sectionGap} onChange={(e) => setSectionGap(Number(e.target.value))} className="w-full accent-orange-500 h-1 mb-1" />
+                                                <input type="range" min="0" max="5" step="0.5" value={sectionGap} onChange={(e) => setSectionGap(Number(e.target.value))} className="w-full accent-amber-500 h-1 mb-1" />
                                             )}
-                                            
-                                            <div className="flex gap-2 text-xs text-gray-400 items-center">
+
+                                            <div className="flex gap-2 text-xs text-purple-300 items-center">
                                                 <span>影</span>
-                                                <input type="range" min="0" max="50" value={shadowConfig.blur} onInput={() => triggerPreview()} onChange={(e) => setShadowConfig(p=>({...p, blur:Number(e.target.value)}))} className="flex-1 h-1 accent-purple-500" />
+                                                <input type="range" min="0" max="50" value={shadowConfig.blur} onInput={() => triggerPreview()} onChange={(e) => setShadowConfig(p=>({...p, blur:Number(e.target.value)}))} className="flex-1 h-1 accent-amber-500" />
                                             </div>
 
-                                            <div className="border-t border-gray-700 my-1"></div>
+                                            <div className="border-t border-purple-700/30 my-1"></div>
 
-                                            <div className="flex justify-between text-xs text-blue-200">
+                                            <div className="flex justify-between text-xs text-amber-200">
                                                 <span className="flex items-center gap-1"><Music size={12}/> サウンド</span>
-                                                <button onClick={() => setSoundEnabled(!soundEnabled)} className="px-1 rounded bg-gray-800">
+                                                <button onClick={() => setSoundEnabled(!soundEnabled)} className="px-1 rounded bg-purple-900/50">
                                                     {soundEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
                                                 </button>
                                             </div>
-                                            <select value={soundType} onChange={handleSoundChange} disabled={!soundEnabled} className="bg-gray-800 text-[10px] p-1 rounded border border-gray-700 outline-none">
+                                            <select value={soundType} onChange={handleSoundChange} disabled={!soundEnabled} className="bg-purple-900/50 text-[10px] p-1 rounded border border-purple-700/30 outline-none">
                                                 <option value="slide">スライド音 (紙)</option>
                                                 <option value="cork">コルク音 (ポンッ)</option>
                                                 <option value="pop">可愛い (ポッ)</option>
@@ -1481,7 +1489,7 @@
                                                 <option value="custom">カスタムファイル...</option>
                                             </select>
                                             {soundType === 'custom' && (
-                                                <label className="cursor-pointer bg-blue-600/20 text-blue-200 text-[10px] py-0.5 px-2 rounded text-center truncate">
+                                                <label className="cursor-pointer bg-violet-600/20 text-violet-200 text-[10px] py-0.5 px-2 rounded text-center truncate">
                                                     <FileAudio size={10} className="inline mr-1"/>
                                                     {customAudioName || 'ファイル選択'}
                                                     <input type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
