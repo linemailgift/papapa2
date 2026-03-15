@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ちいくじパパパメーカー</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (for JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <style>
+        body {
+            background-color: #111827; /* gray-900 */
+            color: white;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        /* スクロールバー等の調整 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; 
+        }
+        input[type=range] {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        // --- アイコンコンポーネント (Lucide Icons SVG) ---
+        const IconBase = ({ children, size = 24, className = "", ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                {children}
+            </svg>
+        );
+
+        const Upload = (props) => <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></IconBase>;
+        const Play = (props) => <IconBase {...props}><polygon points="5 3 19 12 5 21 5 3"/></IconBase>;
+        const Pause = (props) => <IconBase {...props}><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></IconBase>;
+        const RotateCcw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconBase>;
+        const Check = (props) => <IconBase {...props}><polyline points="20 6 9 17 4 12"/></IconBase>;
+        const ImageIcon = (props) => <IconBase {...props}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></IconBase>;
+        const ImageIconSmall = (props) => <IconBase {...props}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></IconBase>;
+        const Download = (props) => <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></IconBase>;
+        const Film = (props) => <IconBase {...props}><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></IconBase>;
+        const Settings = (props) => <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.35a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>;
+        const Sliders = (props) => <IconBase {...props}><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></IconBase>;
+        const Volume2 = (props) => <IconBase {...props}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></IconBase>;
+        const VolumeX = (props) => <IconBase {...props}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></IconBase>;
+        const Music = (props) => <IconBase {...props}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></IconBase>;
+        const FileAudio = (props) => <IconBase {...props}><path d="M17.5 22h.5c.5 0 1-.2 1.4-.6.4-.4.6-.9.6-1.4V7.5L14.5 2H6c-.5 0-1 .2-1.4.6C4.2 3 4 3.5 4 4v3"/><polyline points="14 2 14 8 20 8"/><path d="M10 20v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6"/><path d="M6 20h4"/><path d="M2 20v-6"/></IconBase>;
+        const Layers = (props) => <IconBase {...props}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></IconBase>;
+        const Activity = (props) => <IconBase {...props}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></IconBase>;
+        const FileText = (props) => <IconBase {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></IconBase>;
+        const CheckSquare = (props) => <IconBase {...props}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconBase>;
+        const Square = (props) => <IconBase {...props}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></IconBase>;
+        const Grid = (props) => <IconBase {...props}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></IconBase>;
+        const ArrowUp = (props) => <IconBase {...props}><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></IconBase>;
+        const ArrowDown = (props) => <IconBase {...props}><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></IconBase>;
+        const ArrowLeft = (props) => <IconBase {...props}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></IconBase>;
+        const ArrowRight = (props) => <IconBase {...props}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></IconBase>;
+        const Maximize = (props) => <IconBase {...props}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></IconBase>;
+        const Minimize = (props) => <IconBase {...props}><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></IconBase>;
+        const Repeat = (props) => <IconBase {...props}><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></IconBase>;
+        const RefreshCcw = (props) => <IconBase {...props}><path d="M3 2v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></IconBase>;
+        const Palette = (props) => <IconBase {...props}><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.01 17.461 2 12 2z"/></IconBase>;
+        const Video = (props) => <IconBase {...props}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></IconBase>;
+        const Home = (props) => <IconBase {...props}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconBase>;
+
+        // --- App Component ---
+        const App = () => {
+            // ステータス管理
+            const [status, setStatus] = useState('upload'); 
+            const [files, setFiles] = useState([]); 
+            const [loadedImages, setLoadedImages] = useState([]); 
+            const [canvasSize] = useState({ width: 1920, height: 1080 });
+            const [currentIndex, setCurrentIndex] = useState(0);
+            
+            // PDF処理用ステート
+            const [pdfPages, setPdfPages] = useState([]);
+            const [pdfProcessingProgress, setPdfProcessingProgress] = useState(0);
+
+            // 複数PDF対応: セクション管理
+            const [sections, setSections] = useState([]); // [{name, images: [Image]}]
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const [sectionGap, setSectionGap] = useState(2); // セクション間の間隔（秒）
+            const [pdfQueue, setPdfQueue] = useState([]); // 処理待ちPDFファイル
+            const [currentPdfIndex, setCurrentPdfIndex] = useState(0); // 現在処理中のPDFインデックス
+
+            // --- 設定ステート ---
+            const [speed, setSpeed] = useState(150); 
+            
+            // サイズ設定
+            const [sizeMode, setSizeMode] = useState('random'); 
+            const [scaleRange, setScaleRange] = useState({ min: 20, max: 40 }); 
+            const [fixedSize, setFixedSize] = useState(30); 
+
+            // 角度設定
+            const [angleMode, setAngleMode] = useState('random'); 
+            const [fixedAngle, setFixedAngle] = useState(0); 
+
+            const [shadowConfig, setShadowConfig] = useState({ blur: 20, offset: 10 });
+            
+            // アニメーションパターン
+            const [animPattern, setAnimPattern] = useState('random'); 
+            
+            // タイル設定
+            const [tileConfig, setTileConfig] = useState({
+                cols: 4, rows: 3, direction: 'left'
+            });
+
+            // --- 背景設定 ---
+            const [bgConfig, setBgConfig] = useState({
+                type: 'color', // 'color' | 'image' | 'video'
+                color: '#000000',
+                mediaSrc: null, 
+                mediaElement: null 
+            });
+            const bgVideoRef = useRef(null); 
+
+            // --- サンプル設定 ---
+            const [sampleCount, setSampleCount] = useState(50);
+
+            // --- 音声設定 ---
+            const [soundEnabled, setSoundEnabled] = useState(true);
+            const [soundType, setSoundType] = useState('slide'); 
+            const [customAudioSrc, setCustomAudioSrc] = useState(null); 
+            const [customAudioName, setCustomAudioName] = useState(''); 
+            
+            // 動画関連
+            const [videoBlobInfo, setVideoBlobInfo] = useState(null);
+            const downloadCountRef = useRef(1); // 連番管理用
+            
+            // プレビュー表示用
+            const [previewVisible, setPreviewVisible] = useState(false);
+            const previewTimerRef = useRef(null);
+
+            const canvasRef = useRef(null);
+            const mediaRecorderRef = useRef(null);
+            const chunksRef = useRef([]);
+
+            // アニメーション管理用Ref
+            const animFrameRef = useRef(null);
+            const activeItemsRef = useRef([]);
+            const spawnTimerRef = useRef(null);
+            const spiralRef = useRef({ angle: 0, radius: 0 });
+            
+            // 設定値のRef同期
+            const settingsRef = useRef({
+                speed,
+                sizeMode, scaleRange, fixedSize,
+                angleMode, fixedAngle,
+                shadowConfig,
+                tileConfig,
+                animPattern,
+                bgConfig,
+                sectionGap
+            });
+
+            // AudioContextシングルトン管理 & 録音用Destination
+            const audioContextRef = useRef(null);
+            const audioDestRef = useRef(null); // 録音用ストリーム出力先
+            const customAudioBufferRef = useRef(null); // カスタム音源用バッファ
+
+            useEffect(() => {
+                settingsRef.current = {
+                    speed,
+                    sizeMode, scaleRange, fixedSize,
+                    angleMode, fixedAngle,
+                    shadowConfig,
+                    tileConfig,
+                    animPattern,
+                    bgConfig,
+                    sectionGap
+                };
+            }, [speed, sizeMode, scaleRange, fixedSize, angleMode, fixedAngle, shadowConfig, tileConfig, animPattern, bgConfig, sectionGap]);
+
+            // PDF.jsの読み込み (CDN)
+            useEffect(() => {
+                if(window.pdfjsLib) {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+                }
+            }, []);
+
+            // カスタムオーディオが変更されたらデコードする
+            useEffect(() => {
+                if (customAudioSrc && soundType === 'custom') {
+                    const ctx = getAudioContext();
+                    if (!ctx) return;
+                    fetch(customAudioSrc)
+                        .then(res => res.arrayBuffer())
+                        .then(arr => ctx.decodeAudioData(arr))
+                        .then(decoded => {
+                            customAudioBufferRef.current = decoded;
+                        })
+                        .catch(e => console.error("Audio decode fail:", e));
+                }
+            }, [customAudioSrc, soundType]);
+
+            // 設定変更時のプレビュー表示トリガー
+            const triggerPreview = () => {
+                setPreviewVisible(true);
+                if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
+                previewTimerRef.current = setTimeout(() => {
+                    setPreviewVisible(false);
+                }, 1500);
+            };
+
+            // 背景メディアのアップロード処理
+            const handleBgMediaUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const url = URL.createObjectURL(file);
+                if (file.type.startsWith('image/')) {
+                    const img = new Image();
+                    img.src = url;
+                    img.onload = () => {
+                        setBgConfig({ type: 'image', color: '#000000', mediaSrc: url, mediaElement: img });
+                    };
+                } else if (file.type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.src = url;
+                    video.loop = true;
+                    video.muted = true; // 自動再生のためミュート
+                    video.playsInline = true;
+                    bgVideoRef.current = video;
+                    setBgConfig({ type: 'video', color: '#000000', mediaSrc: url, mediaElement: video });
+                }
+            };
+
+            // --- PDF処理（複数PDF対応） ---
+            const processSinglePdf = async (file) => {
+                return new Promise((resolve, reject) => {
+                    const fileReader = new FileReader();
+                    fileReader.onload = async function() {
+                        const typedarray = new Uint8Array(this.result);
+                        try {
+                            const loadingTask = window.pdfjsLib.getDocument(typedarray);
+                            const pdf = await loadingTask.promise;
+                            const numPages = pdf.numPages;
+                            const pages = [];
+                            for (let i = 1; i <= numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const viewport = page.getViewport({ scale: 2.0 });
+                                const canvas = document.createElement('canvas');
+                                const context = canvas.getContext('2d');
+                                canvas.height = viewport.height;
+                                canvas.width = viewport.width;
+                                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                                pages.push({
+                                    id: i,
+                                    src: canvas.toDataURL('image/jpeg', 0.8),
+                                    selected: true
+                                });
+                            }
+                            resolve({ name: file.name, pages });
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    fileReader.readAsArrayBuffer(file);
+                });
+            };
+
+            const handlePdfFileChange = async (e) => {
+                const fileList = e.target.files || e.dataTransfer?.files;
+                if (!fileList || fileList.length === 0) return;
+
+                const pdfFiles = Array.from(fileList).filter(f => f.type === 'application/pdf');
+                if (pdfFiles.length === 0) return;
+
+                if (!window.pdfjsLib) {
+                    alert("PDF処理ライブラリを読み込み中です。数秒待ってから再試行してください。");
+                    return;
+                }
+
+                setStatus('pdf-processing');
+                setPdfProcessingProgress(0);
+                setPdfQueue(pdfFiles);
+                setCurrentPdfIndex(0);
+
+                try {
+                    const allPdfResults = [];
+                    for (let pi = 0; pi < pdfFiles.length; pi++) {
+                        setCurrentPdfIndex(pi);
+                        setPdfProcessingProgress(Math.round((pi / pdfFiles.length) * 100));
+                        const result = await processSinglePdf(pdfFiles[pi]);
+                        allPdfResults.push(result);
+                    }
+                    setPdfProcessingProgress(100);
+
+                    if (pdfFiles.length === 1) {
+                        // 単一PDF: 従来通りページ選択画面へ
+                        setPdfPages(allPdfResults[0].pages);
+                        setStatus('pdf-select');
+                    } else {
+                        // 複数PDF: 各PDFの全ページをセクションとしてまとめて確認画面へ
+                        const newSections = [];
+                        for (const pdfResult of allPdfResults) {
+                            const imagePromises = pdfResult.pages.map(p => new Promise((resolve) => {
+                                const img = new Image();
+                                img.src = p.src;
+                                img.onload = () => resolve(img);
+                            }));
+                            const images = await Promise.all(imagePromises);
+                            newSections.push({ name: pdfResult.name, images });
+                        }
+                        setSections(newSections);
+                        const allImages = newSections.flatMap(s => s.images);
+                        setLoadedImages(allImages);
+                        setFiles([]);
+                        setStatus('multi-pdf-confirm');
+                    }
+                } catch (error) {
+                    console.error('PDF Error:', error);
+                    alert('PDFの読み込みに失敗しました。');
+                    setStatus('upload');
+                }
+            };
+
+            const togglePdfPageSelection = (id) => {
+                setPdfPages(prev => prev.map(p => p.id === id ? { ...p, selected: !p.selected } : p));
+            };
+            const toggleAllPdfPages = (select) => {
+                setPdfPages(prev => prev.map(p => ({ ...p, selected: select })));
+            };
+            const importSelectedPdfPages = async () => {
+                const selected = pdfPages.filter(p => p.selected);
+                if (selected.length === 0) {
+                    alert('少なくとも1枚の画像を選択してください');
+                    return;
+                }
+                const imagePromises = selected.map(p => new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = p.src;
+                    img.onload = () => resolve(img);
+                }));
+                const images = await Promise.all(imagePromises);
+                setLoadedImages(images);
+                setSections([{ name: 'PDF', images }]);
+                setFiles([]);
+                setStatus('confirm');
+            };
+
+            // --- サンプル画像生成 ---
+            const generateSampleImages = async () => {
+                const images = [];
+                const colors = ['#FFD1DC', '#D1F2FF', '#EAFFD1', '#FFF6D1', '#E8D1FF'];
+
+                for (let i = 0; i < sampleCount; i++) {
+                    const cvs = document.createElement('canvas');
+                    cvs.width = 600; cvs.height = 400;
+                    const ctx = cvs.getContext('2d');
+
+                    // 確実にクリアしてから描画
+                    ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.fillRect(0, 0, cvs.width, cvs.height);
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 15;
+                    ctx.strokeRect(10, 10, cvs.width - 20, cvs.height - 20);
+                    ctx.fillStyle = '#555'; ctx.font = 'bold 100px sans-serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    
+                    // 番号を明示的に描画
+                    ctx.fillText(`${i + 1}`, cvs.width / 2, cvs.height / 2);
+                    
+                    const src = cvs.toDataURL('image/jpeg', 0.8);
+                    const img = await new Promise(resolve => {
+                        const image = new Image();
+                        image.src = src;
+                        image.onload = () => resolve(image);
+                    });
+                    images.push(img);
+                }
+                setFiles(Array.from({ length: sampleCount }).map((_, i) => ({ name: `sample_${i + 1}.jpg` })));
+                setLoadedImages(images);
+                setStatus('confirm');
+            };
+
+            // --- 音声合成 (AudioContextシングルトン化 + 録音ストリーム) ---
+            const getAudioContext = () => {
+                if (!audioContextRef.current) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        const ctx = new AudioContext();
+                        audioContextRef.current = ctx;
+                        // 録音用Destinationノード作成
+                        audioDestRef.current = ctx.createMediaStreamDestination();
+                    }
+                }
+                if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+                    audioContextRef.current.resume();
+                }
+                return audioContextRef.current;
+            };
+
+            const playSoundEffect = (type) => {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+
+                const now = ctx.currentTime;
+                const gain = ctx.createGain();
+                
+                // スピーカーと録音用Destinationの両方に接続
+                gain.connect(ctx.destination);
+                if (audioDestRef.current) {
+                    gain.connect(audioDestRef.current);
+                }
+
+                try {
+                    // カスタム音源の再生 (BufferSource)
+                    if (type === 'custom') {
+                        if (customAudioBufferRef.current) {
+                            const source = ctx.createBufferSource();
+                            source.buffer = customAudioBufferRef.current;
+                            source.connect(gain);
+                            source.start(now);
+                        }
+                        return;
+                    }
+
+                    // シンセサイズ音源
+                    if (type === 'slide') {
+                        const bufferSize = ctx.sampleRate * 0.15;
+                        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                        const noise = ctx.createBufferSource();
+                        noise.buffer = buffer;
+                        const filter = ctx.createBiquadFilter();
+                        filter.type = 'bandpass';
+                        filter.frequency.setValueAtTime(800, now);
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                        noise.connect(filter);
+                        filter.connect(gain);
+                        noise.start(now);
+                    } else if (type === 'pop') {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(800, now);
+                        osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                        gain.gain.setValueAtTime(0.5, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                    } else if (type === 'pico') {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(1200, now);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.08);
+                    } else if (type === 'kira') {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(1500, now);
+                        osc.frequency.linearRampToValueAtTime(2000, now + 0.15);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.15);
+                    } else if (type === 'cork') {
+                        const osc = ctx.createOscillator();
+                        osc.frequency.setValueAtTime(300, now);
+                        osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                        gain.gain.setValueAtTime(0.5, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.05);
+                    } else if (type === 'typewriter') {
+                        const bufferSize = ctx.sampleRate * 0.05;
+                        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1);
+                        const noise = ctx.createBufferSource();
+                        noise.buffer = buffer;
+                        const filter = ctx.createBiquadFilter();
+                        filter.type = 'highpass';
+                        filter.frequency.value = 2000;
+                        gain.gain.setValueAtTime(0.6, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                        noise.connect(filter);
+                        filter.connect(gain);
+                        noise.start(now);
+                    } else if (type === 'drop') {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(1200, now);
+                        osc.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+                        gain.gain.setValueAtTime(0.5, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                    } else if (type === 'retro') {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(600, now);
+                        osc.frequency.setValueAtTime(1200, now + 0.05);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.setValueAtTime(0.2, now + 0.05);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                    } else if (type === 'camera') {
+                        const bufferSize = ctx.sampleRate * 0.1;
+                        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1);
+                        const noise = ctx.createBufferSource();
+                        noise.buffer = buffer;
+                        const filter = ctx.createBiquadFilter();
+                        filter.type = 'lowpass';
+                        filter.frequency.setValueAtTime(1000, now);
+                        gain.gain.setValueAtTime(0.8, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        noise.connect(filter);
+                        filter.connect(gain);
+                        noise.start(now);
+                    } else if (type === 'laser') {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(880, now);
+                        osc.frequency.exponentialRampToValueAtTime(110, now + 0.15);
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.15);
+                    } else if (type === 'coin') {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(987.77, now);
+                        osc.frequency.setValueAtTime(1318.51, now + 0.05);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.4);
+                    } else if (type === 'wood') {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(400, now);
+                        gain.gain.setValueAtTime(0.8, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                        osc.connect(gain);
+                        osc.start(now);
+                        osc.stop(now + 0.05);
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            const handleSoundChange = (e) => {
+                const newType = e.target.value;
+                setSoundType(newType);
+                if (soundEnabled && newType !== 'custom') {
+                    playSoundEffect(newType);
+                }
+            };
+
+            const handleTestSound = () => playSoundEffect(soundType);
+            const handleAudioUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setCustomAudioSrc(URL.createObjectURL(file));
+                    setCustomAudioName(file.name);
+                    setSoundType('custom');
+                }
+            };
+
+            const handleFileChange = (e) => {
+                const selectedFiles = Array.from(e.target.files || e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+                if (selectedFiles.length > 0) {
+                    setFiles(selectedFiles);
+                    const loadPromises = selectedFiles.map(file => new Promise((resolve) => {
+                        const img = new Image();
+                        img.src = URL.createObjectURL(file);
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                    }));
+                    Promise.all(loadPromises).then(images => {
+                        setLoadedImages(images.filter(img => img !== null));
+                        setStatus('confirm');
+                    });
+                }
+            };
+            const handleDragOver = (e) => e.preventDefault();
+            const handleDrop = (e) => { e.preventDefault(); handleFileChange(e); };
+
+            // --- 描画ループ & ロジック ---
+            const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
+            const easeOutBounce = (x) => {
+                const n1 = 7.5625;
+                const d1 = 2.75;
+                if (x < 1 / d1) {
+                    return n1 * x * x;
+                } else if (x < 2 / d1) {
+                    return n1 * (x -= 1.5 / d1) * x + 0.75;
+                } else if (x < 2.5 / d1) {
+                    return n1 * (x -= 2.25 / d1) * x + 0.9375;
+                } else {
+                    return n1 * (x -= 2.625 / d1) * x + 0.984375;
+                }
+            };
+
+            const initCanvas = () => {
+                activeItemsRef.current = [];
+                setCurrentIndex(0);
+                setCurrentSectionIndex(0);
+                setVideoBlobInfo(null);
+                chunksRef.current = [];
+                spiralRef.current = { angle: 0, radius: 0 };
+                
+                if (bgVideoRef.current) {
+                    bgVideoRef.current.currentTime = 0;
+                }
+
+                const canvas = canvasRef.current;
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    if (settingsRef.current.bgConfig.type === 'color') {
+                        ctx.fillStyle = settingsRef.current.bgConfig.color;
+                        ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
+                    }
+                }
+            };
+
+            const renderFrame = () => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const settings = settingsRef.current; 
+                
+                // 背景
+                if (settings.bgConfig.type === 'video' && settings.bgConfig.mediaElement) {
+                    ctx.drawImage(settings.bgConfig.mediaElement, 0, 0, canvasSize.width, canvasSize.height);
+                } else if (settings.bgConfig.type === 'image' && settings.bgConfig.mediaElement) {
+                    ctx.drawImage(settings.bgConfig.mediaElement, 0, 0, canvasSize.width, canvasSize.height);
+                } else {
+                    ctx.fillStyle = settings.bgConfig.color;
+                    ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
+                }
+
+                // アイテム描画
+                activeItemsRef.current.forEach(item => {
+                    if (item.progress < 1) {
+                        item.progress += 0.05; 
+                        if (item.progress > 1) item.progress = 1;
+                    }
+                    
+                    let ease = easeOutCubic(item.progress);
+                    if (settings.animPattern === 'bounce') {
+                        ease = easeOutBounce(item.progress);
+                    }
+
+                    const curX = item.startX + (item.targetX - item.startX) * ease;
+                    const curY = item.startY + (item.targetY - item.startY) * ease;
+                    const curScale = item.startScale + (item.targetScale - item.startScale) * ease;
+                    const curRot = item.startRotation + (item.targetRotation - item.startRotation) * ease;
+                    const curAlpha = item.startAlpha + (item.targetAlpha - item.startAlpha) * ease;
+                    
+                    const drawWidth = canvasSize.width * curScale;
+                    const drawHeight = item.img.height * (drawWidth / item.img.width);
+
+                    ctx.save();
+                    ctx.globalAlpha = curAlpha;
+                    ctx.translate(curX + drawWidth / 2, curY + drawHeight / 2);
+                    ctx.rotate(curRot);
+                    
+                    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+                    ctx.shadowBlur = settings.shadowConfig.blur;
+                    ctx.shadowOffsetX = settings.shadowConfig.offset;
+                    ctx.shadowOffsetY = settings.shadowConfig.offset;
+
+                    ctx.drawImage(item.img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+                    ctx.restore();
+                });
+
+                // プレビュー描画
+                if (previewVisible && loadedImages.length > 0) {
+                    const sampleImg = loadedImages[0];
+                    ctx.fillStyle = "rgba(30, 30, 30, 0.85)";
+                    ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
+                    
+                    let scale = 0;
+                    if (settings.sizeMode === 'random') {
+                        scale = (settings.scaleRange.min + settings.scaleRange.max) / 2 / 100;
+                    } else {
+                        scale = settings.fixedSize / 100;
+                    }
+                    
+                    const pW = canvasSize.width * scale;
+                    const pH = sampleImg.height * (pW / sampleImg.width);
+                    const pX = (canvasSize.width - pW) / 2;
+                    const pY = (canvasSize.height - pH) / 2;
+                    const pRot = settings.angleMode === 'fixed' ? settings.fixedAngle * (Math.PI / 180) : 0;
+
+                    ctx.save();
+                    ctx.translate(pX + pW / 2, pY + pH / 2);
+                    ctx.rotate(pRot);
+                    ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+                    ctx.shadowBlur = settings.shadowConfig.blur;
+                    ctx.shadowOffsetX = settings.shadowConfig.offset;
+                    ctx.shadowOffsetY = settings.shadowConfig.offset;
+                    ctx.drawImage(sampleImg, -pW / 2, -pH / 2, pW, pH);
+                    ctx.restore();
+                    
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 40px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText("PREVIEW MODE", canvasSize.width / 2, canvasSize.height / 2 + pH / 2 + 60);
+                }
+
+                animFrameRef.current = requestAnimationFrame(renderFrame);
+            };
+
+            // 中央回避ランダム座標生成（アイコンが置かれる中央エリアを避ける）
+            const getRandomPositionAvoidCenter = (maxW, maxH) => {
+                const cx = canvasSize.width / 2;
+                const cy = canvasSize.height / 2;
+                const exclusionHalf = 100; // 中心から±100px = 200px四方の除外ゾーン
+                for (let attempt = 0; attempt < 20; attempt++) {
+                    const x = Math.random() * maxW;
+                    const y = Math.random() * maxH;
+                    // 画像の中心点が除外ゾーンに入っていなければOK
+                    if (Math.abs(x + (canvasSize.width * 0.15) - cx) > exclusionHalf ||
+                        Math.abs(y + (canvasSize.height * 0.15) - cy) > exclusionHalf) {
+                        return { x, y };
+                    }
+                }
+                // 20回試してダメなら端に配置
+                return { x: 0, y: 0 };
+            };
+
+            const spawnImage = (idx) => {
+                if (idx >= loadedImages.length) return;
+                const img = loadedImages[idx];
+                const currentSettings = settingsRef.current;
+
+                let scale = 0;
+                if (currentSettings.sizeMode === 'random') {
+                    const minScale = currentSettings.scaleRange.min / 100;
+                    const maxScale = currentSettings.scaleRange.max / 100;
+                    scale = minScale + Math.random() * (maxScale - minScale);
+                } else {
+                    scale = currentSettings.fixedSize / 100;
+                }
+
+                const drawWidth = canvasSize.width * scale;
+                const drawHeight = img.height * (drawWidth / img.width);
+
+                let startX, startY, targetX, targetY;
+                let startScale = scale, targetScale = scale;
+                let startAlpha = 1, targetAlpha = 1;
+                let startRotation = 0, targetRotation = 0;
+
+                const centerX = canvasSize.width / 2 - drawWidth / 2;
+                const centerY = canvasSize.height / 2 - drawHeight / 2;
+
+                // 中央回避が必要なパターンかどうか判定
+                const needsAvoidCenter = ['random', 'fade', 'zoom', 'slide-random', 'bounce', 'rotate-in'].includes(currentSettings.animPattern);
+                let randX, randY;
+                if (needsAvoidCenter) {
+                    const pos = getRandomPositionAvoidCenter(canvasSize.width - drawWidth, canvasSize.height - drawHeight);
+                    randX = pos.x;
+                    randY = pos.y;
+                } else {
+                    randX = Math.random() * (canvasSize.width - drawWidth);
+                    randY = Math.random() * (canvasSize.height - drawHeight);
+                }
+
+                if (currentSettings.angleMode === 'random') {
+                    targetRotation = (Math.random() - 0.5) * 30 * (Math.PI / 180);
+                } else {
+                    targetRotation = currentSettings.fixedAngle * (Math.PI / 180);
+                }
+                startRotation = targetRotation;
+
+                if (currentSettings.animPattern === 'tile') {
+                    const { cols, rows, direction } = currentSettings.tileConfig;
+                    const cellW = canvasSize.width / cols;
+                    const cellH = canvasSize.height / rows;
+                    const gridIdx = idx % (cols * rows);
+                    const col = gridIdx % cols;
+                    const row = Math.floor(gridIdx / cols);
+                    
+                    targetX = (col * cellW) + (cellW - drawWidth) / 2;
+                    targetY = (row * cellH) + (cellH - drawHeight) / 2;
+                    startX = targetX;
+                    startY = targetY;
+                    
+                    if (direction === 'left') startX = canvasSize.width;
+                    else if (direction === 'right') startX = -drawWidth;
+                    else if (direction === 'top') startY = canvasSize.height;
+                    else if (direction === 'bottom') startY = -drawHeight;
+                    
+                } else if (currentSettings.animPattern === 'center-spread') {
+                    startX = centerX; startY = centerY;
+                    targetX = randX; targetY = randY;
+                    startScale = 0;
+                } else if (currentSettings.animPattern === 'spiral') {
+                    const { angle, radius } = spiralRef.current;
+                    const offsetX = Math.cos(angle) * radius;
+                    const offsetY = Math.sin(angle) * radius;
+                    startX = centerX + offsetX; startY = centerY + offsetY;
+                    targetX = startX; targetY = startY;
+                    startScale = 0;
+                    spiralRef.current.angle += 0.5;
+                    spiralRef.current.radius += 20;
+                } else if (currentSettings.animPattern === 'zoom') {
+                    startX = randX; startY = randY;
+                    targetX = randX; targetY = randY;
+                    startScale = 0;
+                } else if (currentSettings.animPattern === 'fade') {
+                    startX = randX; startY = randY;
+                    targetX = randX; targetY = randY;
+                    startAlpha = 0;
+                } else if (currentSettings.animPattern === 'slide-random') {
+                    targetX = randX; targetY = randY;
+                    const side = Math.floor(Math.random() * 4); 
+                    if (side === 0) { startX = randX; startY = -drawHeight; }
+                    else if (side === 1) { startX = canvasSize.width; startY = randY; }
+                    else if (side === 2) { startX = randX; startY = canvasSize.height; }
+                    else { startX = -drawWidth; startY = randY; }
+                } else if (currentSettings.animPattern === 'bounce') {
+                    startX = randX; startY = -drawHeight;
+                    targetX = randX; targetY = randY;
+                } else if (currentSettings.animPattern === 'rotate-in') {
+                    startX = randX; startY = randY;
+                    targetX = randX; targetY = randY;
+                    startScale = 0;
+                    startRotation = targetRotation - (Math.PI * 2); 
+                } else {
+                    startX = randX; startY = randY;
+                    targetX = randX; targetY = randY;
+                }
+
+                activeItemsRef.current.push({
+                    img, 
+                    startX, startY, targetX, targetY,
+                    startScale, targetScale,
+                    startRotation, targetRotation,
+                    startAlpha, targetAlpha,
+                    progress: 0
+                });
+
+                if (soundEnabled) playSoundEffect(soundType);
+                setCurrentIndex(prev => prev + 1);
+            };
+
+            // セクション対応の再生制御用Ref
+            const sectionIndexRef = useRef(0);
+            const sectionImageIndexRef = useRef(0);
+
+            useEffect(() => {
+                if (status === 'playing') {
+                    if (!animFrameRef.current) renderFrame();
+
+                    const hasMultipleSections = sections.length > 1;
+
+                    if (hasMultipleSections) {
+                        // 複数セクション再生
+                        sectionIndexRef.current = currentSectionIndex;
+                        sectionImageIndexRef.current = 0;
+
+                        const playSection = () => {
+                            const secIdx = sectionIndexRef.current;
+                            if (secIdx >= sections.length) {
+                                setTimeout(() => {
+                                    stopRecording();
+                                    setStatus('finished');
+                                }, 4000);
+                                return;
+                            }
+
+                            const sectionImages = sections[secIdx].images;
+                            let imgIdx = 0;
+
+                            // セクション切替時にキャンバスをクリア（背景だけ再描画）
+                            activeItemsRef.current = [];
+                            spiralRef.current = { angle: 0, radius: 0 };
+
+                            spawnTimerRef.current = setInterval(() => {
+                                if (imgIdx >= sectionImages.length) {
+                                    clearInterval(spawnTimerRef.current);
+                                    sectionIndexRef.current++;
+                                    setCurrentSectionIndex(sectionIndexRef.current);
+
+                                    if (sectionIndexRef.current >= sections.length) {
+                                        setTimeout(() => {
+                                            stopRecording();
+                                            setStatus('finished');
+                                        }, 4000);
+                                    } else {
+                                        // 次セクションまで間隔を空ける
+                                        setTimeout(() => {
+                                            playSection();
+                                        }, settingsRef.current.sectionGap * 1000);
+                                    }
+                                    return;
+                                }
+
+                                // グローバルインデックスを算出
+                                let globalIdx = 0;
+                                for (let s = 0; s < sectionIndexRef.current; s++) {
+                                    globalIdx += sections[s].images.length;
+                                }
+                                globalIdx += imgIdx;
+
+                                spawnImage(globalIdx);
+                                imgIdx++;
+                                setCurrentIndex(globalIdx + 1);
+                            }, speed);
+                        };
+
+                        playSection();
+                    } else {
+                        // 単一セクション（従来動作）
+                        spawnTimerRef.current = setInterval(() => {
+                            setCurrentIndex(prev => {
+                                if (prev >= loadedImages.length) {
+                                    clearInterval(spawnTimerRef.current);
+                                    setTimeout(() => {
+                                        stopRecording();
+                                        setStatus('finished');
+                                    }, 4000);
+                                    return prev;
+                                }
+                                spawnImage(prev);
+                                return prev;
+                            });
+                        }, speed);
+                    }
+
+                    return () => {
+                        clearInterval(spawnTimerRef.current);
+                        cancelAnimationFrame(animFrameRef.current);
+                        animFrameRef.current = null;
+                    };
+                } else if (status === 'ready' || status === 'finished') {
+                    if (!animFrameRef.current) renderFrame();
+                    return () => {
+                        cancelAnimationFrame(animFrameRef.current);
+                        animFrameRef.current = null;
+                    };
+                }
+            }, [status, speed, previewVisible]);
+
+            const startRecording = () => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                try {
+                    const canvasStream = canvas.captureStream(30);
+                    
+                    // 音声トラックをミックス
+                    const combinedTracks = [...canvasStream.getTracks()];
+                    if (audioDestRef.current) {
+                        const audioTracks = audioDestRef.current.stream.getAudioTracks();
+                        combinedTracks.push(...audioTracks);
+                    }
+                    const combinedStream = new MediaStream(combinedTracks);
+
+                    const mimeTypes = [
+                        'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+                        'video/mp4',
+                        'video/webm;codecs=h264',
+                        'video/webm;codecs=vp9',
+                        'video/webm'
+                    ];
+                    let selectedMimeType = '';
+                    for (const type of mimeTypes) {
+                        if (MediaRecorder.isTypeSupported(type)) {
+                            selectedMimeType = type;
+                            break;
+                        }
+                    }
+                    const mediaRecorder = new MediaRecorder(combinedStream, selectedMimeType ? { mimeType: selectedMimeType } : undefined);
+                    mediaRecorderRef.current = mediaRecorder;
+                    chunksRef.current = [];
+                    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+                    mediaRecorder.onstop = () => {
+                        const finalMimeType = mediaRecorder.mimeType || selectedMimeType || 'video/webm';
+                        const blob = new Blob(chunksRef.current, { type: finalMimeType });
+                        const url = URL.createObjectURL(blob);
+                        let extension = 'webm';
+                        if (finalMimeType.includes('mp4') || finalMimeType.includes('h264')) extension = 'mp4';
+                        setVideoBlobInfo({ url, mimeType: finalMimeType, extension });
+                    };
+                    mediaRecorder.start();
+                } catch (e) { console.error(e); }
+            };
+
+            const stopRecording = () => {
+                if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
+            };
+
+            const handleStart = () => {
+                const ctx = getAudioContext();
+                if (ctx && ctx.state === 'suspended') ctx.resume();
+                if (bgConfig.type === 'video' && bgVideoRef.current) {
+                    bgVideoRef.current.play().catch(e => console.log('bg video play fail', e));
+                }
+
+                if (currentIndex >= loadedImages.length) {
+                    initCanvas();
+                    setTimeout(() => { startRecording(); setStatus('playing'); }, 50);
+                } else if (currentIndex === 0) {
+                    startRecording(); setStatus('playing');
+                } else { setStatus('playing'); }
+            };
+            
+            const handleRestart = () => {
+                stopRecording();
+                setStatus('ready');
+                initCanvas();
+                if (bgConfig.type === 'video' && bgVideoRef.current) {
+                    bgVideoRef.current.currentTime = 0;
+                }
+                setTimeout(() => {
+                    const ctx = getAudioContext();
+                    if (ctx && ctx.state === 'suspended') ctx.resume();
+                    if (bgConfig.type === 'video' && bgVideoRef.current) {
+                        bgVideoRef.current.play().catch(e => console.log('bg video play fail', e));
+                    }
+                    startRecording();
+                    setStatus('playing');
+                }, 100);
+            };
+
+            const handlePause = () => { 
+                setStatus('ready'); 
+                stopRecording(); 
+                if (bgConfig.type === 'video' && bgVideoRef.current) {
+                    bgVideoRef.current.pause();
+                }
+            };
+            const handleReset = () => { 
+                setStatus('ready');
+                initCanvas();
+            };
+            
+            const handleGoHome = () => {
+                // 即座にリセットして戻る
+                stopRecording();
+                setStatus('upload');
+                setFiles([]);
+                setLoadedImages([]);
+                setPdfPages([]);
+                setSections([]);
+                setCurrentSectionIndex(0);
+                setPdfQueue([]);
+                setCurrentPdfIndex(0);
+                setCurrentIndex(0);
+                setVideoBlobInfo(null);
+                setBgConfig({ type: 'color', color: '#000000', mediaSrc: null, mediaElement: null });
+                if (bgVideoRef.current) {
+                    bgVideoRef.current.pause();
+                    bgVideoRef.current = null;
+                }
+            };
+
+            const getFormattedFilename = () => {
+                const d = new Date();
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const dateStr = `${year}${month}${day}`;
+                const seq = String(downloadCountRef.current).padStart(3, '0');
+                return `ちいくじパパパ_${dateStr}_${seq}`;
+            };
+
+            const handleDownloadVideo = () => {
+                const filename = getFormattedFilename();
+                const link = document.createElement('a'); 
+                link.download = `${filename}.${videoBlobInfo.extension}`;
+                link.href = videoBlobInfo.url; 
+                link.click();
+                downloadCountRef.current += 1;
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col items-center p-4">
+                    <header className="w-full max-w-6xl flex justify-between items-center mb-4 border-b border-gray-700 pb-4">
+                        <h1 className="text-2xl font-bold flex items-center gap-2">
+                            <ImageIcon className="text-blue-400" />
+                            ちいくじパパパメーカー
+                        </h1>
+                        <div className="text-sm text-gray-400 flex items-center gap-1">
+                            <Settings size={16} /> フル機能搭載版
+                        </div>
+                    </header>
+
+                    <main className="w-full max-w-6xl flex-1 flex flex-col gap-4">
+                        
+                        {/* アップロード画面 */}
+                        {status === 'upload' && (
+                            <div className="flex-1 flex flex-col md:flex-row gap-6 items-stretch justify-center p-8 bg-gray-800/50 rounded-xl border border-gray-700">
+                                
+                                {/* 左: サンプル生成 */}
+                                <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-gray-800 to-gray-700 rounded-xl border-2 border-yellow-500/50 hover:border-yellow-400 transition-all shadow-lg min-h-[300px]">
+                                    <Layers className="text-yellow-400 mb-4" size={56} />
+                                    <h2 className="text-2xl font-bold mb-2 text-yellow-100">サンプルで試す</h2>
+                                    <p className="text-sm text-gray-400 mb-6 text-center">ダミー画像を使って<br/>動作を確認できます</p>
+                                    
+                                    <div className="flex items-center gap-2 mb-6 bg-gray-900/50 px-4 py-2 rounded-lg border border-gray-600">
+                                        <span className="text-sm font-bold text-gray-300">枚数:</span>
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            max="200" 
+                                            value={sampleCount} 
+                                            onChange={(e) => setSampleCount(Number(e.target.value))}
+                                            className="w-16 bg-transparent text-center font-mono text-xl text-yellow-400 focus:outline-none"
+                                        />
+                                    </div>
+                                    
+                                    <button 
+                                        onClick={generateSampleImages} 
+                                        className="w-full py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <Play size={18} fill="currentColor" /> スタート
+                                    </button>
+                                </div>
+
+                                {/* 中央: 画像アップロード */}
+                                <div 
+                                    className="flex-1 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center p-8 transition-colors hover:border-blue-500 bg-gray-900 cursor-pointer min-h-[300px]"
+                                    onDragOver={handleDragOver} onDrop={handleDrop}
+                                >
+                                    <input type="file" multiple accept="image/*" className="hidden" id="fileInput" onChange={handleFileChange} />
+                                    <label htmlFor="fileInput" className="cursor-pointer flex flex-col items-center text-center w-full h-full justify-center">
+                                        <Upload size={48} className="text-blue-400 mb-4" />
+                                        <p className="text-lg font-bold mb-2">画像ファイルをアップロード</p>
+                                        <p className="text-sm text-gray-500">画像を複数ドロップ</p>
+                                    </label>
+                                </div>
+
+                                {/* 右: PDFアップロード（複数対応） */}
+                                <div
+                                    className="flex-1 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center p-8 transition-colors hover:border-red-500 bg-gray-900 cursor-pointer min-h-[300px]"
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDrop={(e) => {
+                                        e.preventDefault();
+                                        handlePdfFileChange({ dataTransfer: e.dataTransfer });
+                                    }}
+                                >
+                                    <input type="file" accept="application/pdf" multiple className="hidden" id="pdfInput" onChange={handlePdfFileChange} />
+                                    <label htmlFor="pdfInput" className="cursor-pointer flex flex-col items-center text-center w-full h-full justify-center">
+                                        <FileText size={48} className="text-red-400 mb-4" />
+                                        <p className="text-lg font-bold mb-2">PDFをアップロード</p>
+                                        <p className="text-sm text-gray-500">複数PDFをまとめて選択OK<br/>連続パパパで1本の動画に</p>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* PDF処理画面 */}
+                        {status === 'pdf-processing' && (
+                            <div className="flex-1 flex flex-col items-center justify-center bg-gray-800 rounded-xl p-8">
+                                <Activity className="animate-spin text-blue-400 mb-4" size={48} />
+                                <h2 className="text-2xl font-bold mb-4">PDFを処理中...</h2>
+                                {pdfQueue.length > 1 && (
+                                    <p className="text-sm text-gray-300 mb-2">{currentPdfIndex + 1} / {pdfQueue.length} ファイル: {pdfQueue[currentPdfIndex]?.name}</p>
+                                )}
+                                <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
+                                    <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${pdfProcessingProgress}%` }} />
+                                </div>
+                                <p className="mt-2 text-gray-400">{pdfProcessingProgress}%</p>
+                            </div>
+                        )}
+
+                        {/* PDF選択画面 */}
+                        {status === 'pdf-select' && (
+                            <div className="flex-1 flex flex-col bg-gray-800 rounded-xl p-4 h-[80vh]">
+                                <div className="flex justify-between items-center mb-4 px-2">
+                                    <h2 className="text-xl font-bold flex items-center gap-2">
+                                        <CheckSquare size={24} className="text-green-400" />
+                                        使用ページ選択 ({pdfPages.filter(p => p.selected).length} / {pdfPages.length})
+                                    </h2>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => toggleAllPdfPages(true)} className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded">すべて選択</button>
+                                        <button onClick={() => toggleAllPdfPages(false)} className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded">すべて解除</button>
+                                    </div>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-2 bg-gray-900 rounded-lg border border-gray-700">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        {pdfPages.map((page) => (
+                                            <div key={page.id} onClick={() => togglePdfPageSelection(page.id)} className={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${page.selected ? 'border-green-500 ring-2 ring-green-500/30' : 'border-transparent opacity-60 hover:opacity-80'}`}>
+                                                <img src={page.src} alt={`Page ${page.id}`} className="w-full h-full object-cover" />
+                                                <div className="absolute top-2 left-2">
+                                                    {page.selected ? <CheckSquare className="text-green-500 bg-white rounded shadow" size={20} /> : <Square className="text-gray-400 bg-gray-800 rounded shadow" size={20} />}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-4 mt-4 pt-2 border-t border-gray-700">
+                                    <button onClick={() => { setPdfPages([]); setStatus('upload'); }} className="px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">キャンセル</button>
+                                    <button onClick={importSelectedPdfPages} className="px-8 py-2 rounded-lg bg-green-600 hover:bg-green-500 font-bold flex items-center gap-2">選択した画像を取り込む</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 複数PDF確認画面 */}
+                        {status === 'multi-pdf-confirm' && (
+                            <div className="flex-1 flex flex-col bg-gray-800 rounded-xl p-6">
+                                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                    <Layers size={24} className="text-red-400" />
+                                    {sections.length}個のPDFを読み込みました
+                                </h2>
+                                <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                                    {sections.map((sec, i) => (
+                                        <div key={i} className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="font-bold text-sm text-blue-300">セクション {i + 1}: {sec.name}</span>
+                                                <span className="text-xs text-gray-400">{sec.images.length}ページ</span>
+                                            </div>
+                                            <div className="flex gap-2 overflow-x-auto pb-2">
+                                                {sec.images.slice(0, 8).map((img, j) => (
+                                                    <div key={j} className="flex-shrink-0 w-24 h-16 bg-gray-800 rounded overflow-hidden border border-gray-600">
+                                                        <img src={img.src} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ))}
+                                                {sec.images.length > 8 && (
+                                                    <div className="flex-shrink-0 w-24 h-16 bg-gray-800 rounded border border-gray-600 flex items-center justify-center text-xs text-gray-400">
+                                                        +{sec.images.length - 8}枚
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-700 mb-4">
+                                    <div className="flex items-center justify-between text-sm text-gray-300 mb-2">
+                                        <span>セクション間の間隔</span>
+                                        <span className="font-mono text-blue-400">{sectionGap}秒</span>
+                                    </div>
+                                    <input type="range" min="0" max="5" step="0.5" value={sectionGap}
+                                        onChange={(e) => setSectionGap(Number(e.target.value))}
+                                        className="w-full accent-blue-500 h-1" />
+                                    <p className="text-[10px] text-gray-500 mt-1">各PDFのパパパ完了後、次のPDFが始まるまでの待機時間</p>
+                                </div>
+                                <div className="flex items-center justify-between pt-2 border-t border-gray-700">
+                                    <div className="text-sm text-gray-400">
+                                        合計 {loadedImages.length}枚 → 1本の動画
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button onClick={() => { setSections([]); setLoadedImages([]); setPdfQueue([]); setStatus('upload'); }}
+                                            className="px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">キャンセル</button>
+                                        <button onClick={() => { setStatus('confirm'); }}
+                                            className="px-8 py-2 rounded-lg bg-green-600 hover:bg-green-500 font-bold">OK、パパパ開始</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 確認画面 */}
+                        {status === 'confirm' && (
+                            <div className="flex-1 flex flex-col items-center justify-center bg-gray-800 rounded-xl p-8">
+                                <div className="text-6xl font-bold text-blue-400 mb-4">{loadedImages.length}</div>
+                                <p className="text-2xl mb-8">枚の画像を準備しました。</p>
+                                <div className="flex gap-4">
+                                    <button onClick={() => { setFiles([]); setLoadedImages([]); setStatus('upload'); }} className="px-6 py-3 rounded-lg bg-gray-700">キャンセル</button>
+                                    <button onClick={() => { setStatus('ready'); setTimeout(initCanvas, 100); }} className="px-8 py-3 rounded-lg bg-blue-600 font-bold flex items-center gap-2"><Check /> OKです</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* プレビュー/実行画面 */}
+                        {(status === 'ready' || status === 'playing' || status === 'finished') && (
+                            <div className="flex flex-col w-full h-full gap-4">
+                                <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-xl border border-gray-700">
+                                    <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} className="w-full h-full object-contain" />
+                                    <div className="absolute top-4 left-4 bg-black/60 px-3 py-1 rounded text-sm font-mono backdrop-blur-sm flex items-center gap-3 border border-gray-600 z-10">
+                                        <span>{currentIndex} / {loadedImages.length}</span>
+                                        {sections.length > 1 && <span className="text-xs text-blue-300">SEC {currentSectionIndex + 1}/{sections.length}</span>}
+                                        {status === 'playing' && <span className="flex items-center gap-1 text-red-400 text-xs animate-pulse">REC</span>}
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-800 p-4 rounded-xl flex flex-col gap-4 shadow-lg">
+                                    <div className="relative flex items-center justify-center border-b border-gray-700 pb-4">
+                                        <div className="absolute left-0">
+                                            <button onClick={handleGoHome} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-colors z-20" title="トップページに戻る">
+                                                <Home size={18} />
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center gap-6">
+                                            <button onClick={handleRestart} className="flex flex-col items-center justify-center gap-1 text-xs font-bold text-gray-300 hover:text-white transition-colors group" title="最初から再生">
+                                                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-700 group-hover:bg-blue-600 text-white shadow-lg transition-all">
+                                                    <RefreshCcw size={20} />
+                                                </div>
+                                                <span>最初から</span>
+                                            </button>
+                                            {status === 'playing' ? (
+                                                <button onClick={handlePause} className="w-20 h-20 flex items-center justify-center rounded-full bg-yellow-600 hover:bg-yellow-500 text-white shadow-xl transition-transform active:scale-95">
+                                                    <Pause fill="currentColor" size={32} />
+                                                </button>
+                                            ) : (
+                                                <button onClick={handleStart} disabled={status === 'finished'} className={`w-20 h-20 flex items-center justify-center rounded-full shadow-xl transition-transform active:scale-95 ${status === 'finished' ? 'bg-gray-600 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 text-white'}`}>
+                                                    <Play fill="currentColor" size={32} className="ml-1" />
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="absolute right-0 flex items-center gap-2">
+                                            {videoBlobInfo && (
+                                                <button onClick={handleDownloadVideo} className="px-4 py-2 bg-pink-600 hover:bg-pink-500 rounded-lg flex items-center gap-2 font-bold animate-in fade-in text-white shadow-lg">
+                                                    <Film size={20} /> <span className="hidden sm:inline">動画保存</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                                        <div className="bg-gray-900/50 p-3 rounded-lg flex flex-col gap-2 border border-green-900/30">
+                                            <span className="flex items-center gap-1 text-sm text-green-200"><Activity size={14}/> アニメーション</span>
+                                            <select value={animPattern} onChange={(e) => setAnimPattern(e.target.value)} className="bg-gray-800 text-xs p-2 rounded border border-gray-700 outline-none">
+                                                <option value="random">ランダム (標準)</option>
+                                                <option value="fade">フェードイン (Fade)</option>
+                                                <option value="slide-random">スライドイン (Slide)</option>
+                                                <option value="bounce">バウンス (Bounce)</option>
+                                                <option value="rotate-in">回転ズーム (Rotate)</option>
+                                                <option value="center-spread">中央から拡散</option>
+                                                <option value="spiral">渦巻き状 (Spiral)</option>
+                                                <option value="zoom">ズームイン</option>
+                                                <option value="tile">タイル・スライド</option>
+                                            </select>
+                                            {animPattern === 'tile' && (
+                                                <div className="flex flex-col gap-1 mt-1 p-2 bg-gray-800 rounded border border-gray-700">
+                                                    <div className="flex items-center justify-between text-xs text-gray-300">
+                                                        <span>縦 x 横</span>
+                                                        <div className="flex gap-1">
+                                                            <input type="number" min="1" max="20" value={tileConfig.rows} onChange={(e) => setTileConfig(p=>({...p, rows: Number(e.target.value)}))} className="w-10 bg-gray-700 text-center rounded" title="縦(行)"/>
+                                                            <span>x</span>
+                                                            <input type="number" min="1" max="20" value={tileConfig.cols} onChange={(e) => setTileConfig(p=>({...p, cols: Number(e.target.value)}))} className="w-10 bg-gray-700 text-center rounded" title="横(列)"/>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center justify-between text-xs text-gray-300 mt-1">
+                                                        <span>方向</span>
+                                                        <div className="flex gap-1">
+                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'left'}))} className={`p-1 rounded ${tileConfig.direction==='left'?'bg-blue-600':'bg-gray-700'}`}><ArrowLeft size={10}/></button>
+                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'right'}))} className={`p-1 rounded ${tileConfig.direction==='right'?'bg-blue-600':'bg-gray-700'}`}><ArrowRight size={10}/></button>
+                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'top'}))} className={`p-1 rounded ${tileConfig.direction==='top'?'bg-blue-600':'bg-gray-700'}`}><ArrowUp size={10}/></button>
+                                                            <button onClick={()=>setTileConfig(p=>({...p, direction: 'bottom'}))} className={`p-1 rounded ${tileConfig.direction==='bottom'?'bg-blue-600':'bg-gray-700'}`}><ArrowDown size={10}/></button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="bg-gray-900/50 p-3 rounded-lg flex flex-col gap-2 relative">
+                                            <div className="flex items-center justify-between text-sm text-gray-300">
+                                                <span className="flex items-center gap-1"><Palette size={14}/> 背景設定</span>
+                                            </div>
+                                            <div className="flex gap-2 mb-1">
+                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#000000'}))} className={`flex-1 h-6 rounded border border-gray-600 bg-black ${bgConfig.type==='color' && bgConfig.color==='#000000' ? 'ring-2 ring-blue-500' : ''}`} title="黒" />
+                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#FFFFFF'}))} className={`flex-1 h-6 rounded border border-gray-600 bg-white ${bgConfig.type==='color' && bgConfig.color==='#FFFFFF' ? 'ring-2 ring-blue-500' : ''}`} title="白" />
+                                                <button onClick={() => setBgConfig(p => ({...p, type: 'color', color: '#00FF00'}))} className={`flex-1 h-6 rounded border border-gray-600 bg-green-500 font-bold text-[10px] text-black flex items-center justify-center ${bgConfig.type==='color' && bgConfig.color==='#00FF00' ? 'ring-2 ring-blue-500' : ''}`} title="グリーンバック">GB</button>
+                                                <input type="color" value={bgConfig.type==='color' ? bgConfig.color : '#000000'} onChange={(e) => setBgConfig(p => ({...p, type: 'color', color: e.target.value}))} className="w-8 h-6 p-0 border-0 rounded" />
+                                            </div>
+                                            <label className="flex items-center justify-center gap-2 w-full py-1.5 bg-gray-800 hover:bg-gray-700 rounded cursor-pointer text-xs text-gray-300 border border-gray-600 transition-colors">
+                                                {bgConfig.type === 'video' ? <Video size={14}/> : <ImageIconSmall size={14}/>}
+                                                <span>{bgConfig.mediaSrc ? 'メディア変更' : '画像/動画を選択'}</span>
+                                                <input type="file" accept="image/*,video/*" className="hidden" onChange={handleBgMediaUpload} />
+                                            </label>
+                                        </div>
+
+                                        <div className="bg-gray-900/50 p-3 rounded-lg flex flex-col gap-2 relative">
+                                            <div className="flex items-center justify-between text-sm text-gray-300">
+                                                <span className="flex items-center gap-1"><Maximize size={14}/> サイズ & 角度</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1 text-xs">
+                                                <div className="flex justify-between items-center text-gray-400">
+                                                    <span>Size</span>
+                                                    <div className="flex bg-gray-800 rounded p-0.5">
+                                                        <button onClick={() => { setSizeMode('random'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${sizeMode==='random'?'bg-blue-600 text-white':'text-gray-400'}`}>ランダム</button>
+                                                        <button onClick={() => { setSizeMode('fixed'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${sizeMode==='fixed'?'bg-blue-600 text-white':'text-gray-400'}`}>固定</button>
+                                                    </div>
+                                                </div>
+                                                {sizeMode === 'random' ? (
+                                                    <div className="flex gap-1 items-center">
+                                                        <input type="range" min="1" max="100" value={scaleRange.min} onInput={() => triggerPreview()} onChange={(e) => setScaleRange(p=>({...p, min:Number(e.target.value)}))} className="flex-1 h-1 accent-blue-500" />
+                                                        <span className="text-[10px]">-</span>
+                                                        <input type="range" min="1" max="100" value={scaleRange.max} onInput={() => triggerPreview()} onChange={(e) => setScaleRange(p=>({...p, max:Number(e.target.value)}))} className="flex-1 h-1 accent-blue-500" />
+                                                    </div>
+                                                ) : (
+                                                    <input type="range" min="1" max="150" value={fixedSize} onInput={() => triggerPreview()} onChange={(e) => setFixedSize(Number(e.target.value))} className="w-full h-1 accent-blue-500" />
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col gap-1 text-xs mt-1 border-t border-gray-700 pt-1">
+                                                <div className="flex justify-between items-center text-gray-400">
+                                                    <span>Angle</span>
+                                                    <div className="flex bg-gray-800 rounded p-0.5">
+                                                        <button onClick={() => { setAngleMode('random'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${angleMode==='random'?'bg-blue-600 text-white':'text-gray-400'}`}>ランダム</button>
+                                                        <button onClick={() => { setAngleMode('fixed'); triggerPreview(); }} className={`px-2 py-0.5 text-[10px] rounded ${angleMode==='fixed'?'bg-blue-600 text-white':'text-gray-400'}`}>固定</button>
+                                                    </div>
+                                                </div>
+                                                {angleMode === 'fixed' && (
+                                                    <div className="flex items-center gap-2">
+                                                        <input type="range" min="-180" max="180" value={fixedAngle} onInput={() => triggerPreview()} onChange={(e) => setFixedAngle(Number(e.target.value))} className="flex-1 h-1 accent-blue-500" />
+                                                        <span className="w-6 text-right font-mono">{fixedAngle}°</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-gray-900/50 p-3 rounded-lg flex flex-col gap-2">
+                                            <div className="flex justify-between text-xs text-gray-300">
+                                                <span className="flex items-center gap-1"><Sliders size={12}/> 表示間隔</span>
+                                                <span className="font-mono">{speed}ms</span>
+                                            </div>
+                                            <input type="range" min="20" max="800" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="w-full accent-blue-500 h-1 mb-1" />
+                                            {sections.length > 1 && (
+                                                <div className="flex justify-between text-xs text-gray-300 mt-1">
+                                                    <span>セクション間隔</span>
+                                                    <span className="font-mono">{sectionGap}秒</span>
+                                                </div>
+                                            )}
+                                            {sections.length > 1 && (
+                                                <input type="range" min="0" max="5" step="0.5" value={sectionGap} onChange={(e) => setSectionGap(Number(e.target.value))} className="w-full accent-orange-500 h-1 mb-1" />
+                                            )}
+                                            
+                                            <div className="flex gap-2 text-xs text-gray-400 items-center">
+                                                <span>影</span>
+                                                <input type="range" min="0" max="50" value={shadowConfig.blur} onInput={() => triggerPreview()} onChange={(e) => setShadowConfig(p=>({...p, blur:Number(e.target.value)}))} className="flex-1 h-1 accent-purple-500" />
+                                            </div>
+
+                                            <div className="border-t border-gray-700 my-1"></div>
+
+                                            <div className="flex justify-between text-xs text-blue-200">
+                                                <span className="flex items-center gap-1"><Music size={12}/> サウンド</span>
+                                                <button onClick={() => setSoundEnabled(!soundEnabled)} className="px-1 rounded bg-gray-800">
+                                                    {soundEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
+                                                </button>
+                                            </div>
+                                            <select value={soundType} onChange={handleSoundChange} disabled={!soundEnabled} className="bg-gray-800 text-[10px] p-1 rounded border border-gray-700 outline-none">
+                                                <option value="slide">スライド音 (紙)</option>
+                                                <option value="cork">コルク音 (ポンッ)</option>
+                                                <option value="pop">可愛い (ポッ)</option>
+                                                <option value="pico">可愛い (ピコッ)</option>
+                                                <option value="kira">可愛い (キラッ)</option>
+                                                <option value="camera">カメラ (カシャ)</option>
+                                                <option value="laser">レーザー (ビョーン)</option>
+                                                <option value="coin">コイン (チャリーン)</option>
+                                                <option value="wood">木魚 (ポクッ)</option>
+                                                <option value="typewriter">タイプライター</option>
+                                                <option value="drop">水滴 (ポチャン)</option>
+                                                <option value="retro">レトロ (ピロリ)</option>
+                                                <option value="custom">カスタムファイル...</option>
+                                            </select>
+                                            {soundType === 'custom' && (
+                                                <label className="cursor-pointer bg-blue-600/20 text-blue-200 text-[10px] py-0.5 px-2 rounded text-center truncate">
+                                                    <FileAudio size={10} className="inline mr-1"/>
+                                                    {customAudioName || 'ファイル選択'}
+                                                    <input type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
+                                                </label>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
